@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A Little Something for You, Sara ♡</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Theme variables */
+    :root{
+      --paper:#f7efe4;
+      --paper2:#fffaf2;
+      --pink:#e8b9bd;
+      --rose:#b66e78;
+      --ink:#493b36;
+      --muted:#87746b;
+      --shadow:0 14px 40px rgba(99,68,59,.15);
+      --accent:#dba7aa;
+      --sticker-shadow: 0 4px 12px rgba(0,0,0,.08);
+      --grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="g"><feTurbulence baseFrequency="0.9" numOctaves="1" result="t"/><feColorMatrix type="saturate" values="0" /><feComponentTransfer><feFuncA type="table" tableValues="0 0.2"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(%23g)" opacity="0.06" /></svg>');
+    }
+
+    /* Basic reset */
+    *{box-sizing:border-box}
+    html{font-family:DM Sans,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      margin:0;
+      background:var(--paper) fixed;
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.5;
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+
+    /* Paper texture overlay */
+    body:after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:var(--grain);
+      opacity:.5;
+      mix-blend-mode:multiply;
+    }
+
+    /* Top bar */
+    .topbar{
+      position:sticky; top:0;
+      background:linear-gradient(180deg, rgba(247,239,228,.9), rgba(247,239,228,.6));
+      border-bottom:1px solid rgba(220,200,190,.6);
+      padding:10px 18px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      z-index:30;
+    }
+    .brand{font-family:"Caveat",cursive; color:var(--rose); font-size:1.3rem}
+
+    .container{width:min(1100px,96%); margin:28px auto 80px; padding:0 10px}
+
+    /* Opening screen */
+    #opening{
+      min-height:86vh;
+      display:grid;
+      place-items:center;
+      padding:36px 18px;
+      text-align:center;
+    }
+    .opening-card{max-width:700px;background:linear-gradient(180deg,var(--paper2),#fff); padding:30px;border-radius:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .eyebrow{font-size:.8rem;letter-spacing:.14em;color:var(--rose); text-transform:uppercase;font-weight:700}
+    h1.serif{font-family:"Playfair Display",serif;font-size:2.4rem;margin:.4rem 0;color:var(--ink);line-height:1.02}
+    .sub{color:var(--muted); margin-bottom:18px}
+
+    /* Envelope */
+    .envelope-wrap{display:flex;justify-content:center;margin:10px 0 16px;perspective:900px}
+    .envelope{
+      width:320px;height:190px;border-radius:8px;background:linear-gradient(180deg,#f7c9cb,#f2a7ab);
+      position:relative;box-shadow:0 18px 36px rgba(120,70,70,.18);cursor:pointer;transition:transform .45s ease;
+      transform-origin:top center;
+    }
+    .envelope .flap{
+      position:absolute;left:0;right:0;top:0;height:92px;background:linear-gradient(180deg,#f2b3b7,#f3d6d7);
+      clip-path:polygon(0 0,50% 72%,100% 0);
+      transform-origin:top;
+      transition:transform .9s cubic-bezier(.2,.9,.2,1);
+      z-index:3;
+      display:grid;place-items:center;color:#fff;font-size:1.4rem;font-family:"Caveat";
+    }
+    .envelope .body{
+      position:absolute;left:8%;right:8%;bottom:12px;top:56px;background:var(--paper2);border-radius:4px;z-index:1;display:grid;place-items:center;color:#b35d69;font-family:"Caveat";font-size:1.1rem;
+      transition:transform .6s ease;
+    }
+    .envelope .seal{
+      position:absolute;left:50%;top:50%;transform:translate(-50%,-10%);width:48px;height:48px;border-radius:50%;background:var(--rose);display:grid;place-items:center;color:#fff;font-size:18px;z-index:4;
+      box-shadow:0 4px 10px rgba(0,0,0,.12);
+      transition:opacity .4s ease;
+    }
+    .envelope.open{transform:translateY(6px)}
+    .envelope.open .flap{transform:rotateX(180deg)}
+    .envelope.open .body{transform:translateY(-82px)}
+    .envelope.open .seal{opacity:0}
+
+    .open-btn{background:var(--ink);color:#fff;padding:12px 18px;border-radius:999px;border:0;cursor:pointer;box-shadow:0 10px 20px rgba(73,59,54,.12);font-weight:600}
+    .open-btn:focus{outline:3px solid rgba(182,110,120,.25);outline-offset:4px}
+
+    /* Site main hidden until open */
+    #site{display:none;opacity:0;transition:opacity .6s ease}
+    #site.visible{display:block}
+    #site.ready{opacity:1}
+
+    main{margin-top:18px}
+
+    /* Gallery */
+    .section-head{ text-align:center;margin:18px 0 8px}
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:10px}
+    .polaroid{
+      background:var(--paper2);
+      padding:12px;
+      border-radius:8px;
+      box-shadow:0 8px 18px rgba(78,58,48,.08);
+      border:1px solid rgba(220,200,190,.7);
+      position:relative;
+      transition:transform .25s,box-shadow .25s;
+      min-width:0;
+      overflow:hidden;
+    }
+    .polaroid:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(78,58,48,.12)}
+    .photo{
+      width:100%;
+      aspect-ratio:4/4.2;
+      background:linear-gradient(160deg,#f3ded8,#ead8c6);
+      border-radius:6px;
+      overflow:hidden;
+      display:grid;place-items:center;
+      position:relative;
+    }
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .placeholder{padding:18px;text-align:center;color:#9c746d;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .caption{font-family:"Caveat";font-size:1.1rem;text-align:center;padding-top:10px;color:#6b4f46;min-height:48px;outline:none}
+    .caption[contenteditable="true"]:focus{box-shadow:0 0 0 3px rgba(182,110,120,.12);border-radius:4px}
+    .sticker{position:absolute;right:-10px;top:-10px;font-size:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.08))}
+
+    .replace-btn{
+      position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.92);border:1px solid rgba(220,200,190,.8);padding:6px 8px;border-radius:8px;font-size:.86rem;cursor:pointer;box-shadow:var(--sticker-shadow);
+    }
+    .replace-input{display:none}
+
+    .gallery-tip{color:var(--muted);font-size:.86rem;margin-top:14px;text-align:center}
+
+    /* Flipbook */
+    .flip-section{background:#efe3d6;padding:28px;border-radius:10px;margin-top:28px;border:1px solid rgba(220,200,190,.7)}
+    .book{max-width:820px;margin:6px auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;perspective:1400px}
+    .page{
+      background:var(--paper2);padding:20px;border-radius:6px;border:1px solid rgba(220,200,190,.8);
+      min-height:260px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+      transform-style:preserve-3d;transition:transform .48s ease, box-shadow .3s;
+    }
+    .page h3{font-family:"Caveat";font-size:1.4rem;margin:0 0 .6rem}
+    .page p{font-family:"Playfair Display",serif;color:#5f433b;margin:0}
+    .page-no{font-size:.72rem;color:#b28b7d;letter-spacing:.12em;margin-bottom:12px;text-transform:uppercase}
+    .book-controls{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:12px}
+    .counter{font-size:.9rem;color:var(--muted)}
+
+    .btn{background:#fff9f0;border:1px solid rgba(220,200,190,.9);padding:10px 14px;border-radius:999px;cursor:pointer}
+    .btn.primary{background:var(--ink);color:#fff;border:0}
+    .btn:focus{outline:3px solid rgba(182,110,120,.2);outline-offset:3px}
+
+    /* Personal letter */
+    .personal-letter{max-width:760px;margin:22px auto;padding:22px;background:var(--paper2);border-radius:8px;border:1px solid rgba(220,200,190,.8);box-shadow:var(--shadow)}
+    .letter-copy{white-space:pre-line;font-family:"Playfair Display",serif;color:#5b4238;font-size:1.02rem;line-height:1.9}
+    .signature{font-family:"Caveat";font-size:1.5rem;color:var(--rose);text-align:right;margin-top:12px}
+
+    /* Final scene */
+    .final-scene{max-width:820px;margin:30px auto 80px;padding:38px;border-radius:10px;color:#fff;text-align:center;background:radial-gradient(ellipse at 50% 10%,#6f4f52 0%,#2d2a3b 50%);position:relative;overflow:hidden}
+    .final-scene:before{
+      content:"";position:absolute;inset:0;opacity:.12;background-image:radial-gradient(circle at 20% 15%, rgba(255,255,255,.8) 0, transparent 30%), radial-gradient(circle at 80% 40%, rgba(255,255,255,.5) 0, transparent 20%);
+    }
+    .final-text{font-family:"Playfair Display",serif;font-size:1.4rem;margin:0 auto 14px;max-width:720px}
+    .final-scene .hand{font-family:"Caveat";font-size:1.2rem;color:#ffcfcf;margin-bottom:8px}
+
+    /* Floating hearts */
+    .float-heart{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:-40px;pointer-events:none;z-index:10;opacity:.95;
+      animation:floatUp linear infinite;
+      color:#d88a92;font-size:20px;
+    }
+    @keyframes floatUp{
+      0%{transform:translate(-50%,0) scale(.9);opacity:1}
+      100%{transform:translate(-50%,-120vh) scale(1.1);opacity:0}
+    }
+
+    /* Responsive */
+    @media(max-width:900px){
+      .gallery{grid-template-columns:repeat(2,1fr)}
+      .book{grid-template-columns:1fr}
+      .envelope{width:86vw;max-width:420px;height:200px}
+    }
+    @media(max-width:480px){
+      h1.serif{font-size:1.6rem}
+      .gallery{grid-template-columns:1fr}
+      .opening-card{padding:20px}
+      .photo{aspect-ratio:4/3}
+      .page{min-height:220px;padding:16px}
+    }
+
+    /* Focus styles for keyboard */
+    a, button {font-family:inherit}
+  </style>
+</head>
+<body>
+  <div id="opening" aria-label="Welcome to a little keepsake">
+    <div class="opening-card" role="region" aria-labelledby="welcomeTitle">
+      <div class="eyebrow">A small keepsake, made with care</div>
+      <h1 class="serif" id="welcomeTitle">A Little Something<br><i>for You</i> <span style="color:var(--rose)">♡</span></h1>
+      <p class="sub">No special occasion. Just a little happiness.</p>
+
+      <div class="envelope-wrap" aria-hidden="false">
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-pressed="false" aria-label="Sealed pink envelope. Click to open.">
+          <div class="flap">for Sara, with care ♡</div>
+          <div class="body">open your surprise</div>
+          <div class="seal">♡</div>
+        </div>
+      </div>
+
+      <button class="open-btn" id="openBtn" aria-controls="site">Open your little surprise →</button>
+      <p class="hand" style="font-size:1.05rem;color:#a7897b;margin-top:16px">made just for you, Sara</p>
+    </div>
+  </div>
+
+  <div id="site" aria-hidden="true">
+    <div class="topbar">
+      <div class="brand">a little something ♡</div>
+      <div style="flex:1"></div>
+      <button id="musicToggle" class="btn" aria-pressed="false" title="Play or pause gentle background music">♫ Music: off</button>
+      <button id="restart" class="btn" style="margin-left:10px">Start over</button>
+    </div>
+
+    <main class="container">
+      <!-- Note -->
+      <section id="note" aria-labelledby="noteHead">
+        <div class="section-head" id="noteHead">
+          <div class="eyebrow">a note for you</div>
+          <h2 class="serif">An ordinary day, made softer</h2>
+          <p style="color:var(--muted);max-width:620px;margin:8px auto 0">A small collection of photos, notes, and a few gentle thoughts — just to make a regular day feel a little more like a gift.</p>
+        </div>
+
+        <article class="personal-letter" aria-labelledby="letterhead">
+          <h3 id="letterhead" class="eyebrow">A personal introduction</h3>
+          <p class="letter-copy" id="introMessage">
+Hey Sara,
+
+Today isn't your birthday. It isn't an anniversary or any special occasion either.
+
+It's just an ordinary day.
+
+But then I thought... why should I wait for a special day to make someone feel special?
+
+So here's a little something for you. No occasion. No expectations. Just a small reminder that you can make an ordinary day feel a little more beautiful simply by being yourself.
+
+You don't have to do anything with this. Just explore it at your own pace and take whatever happiness you find here.
+
+Some people don't need a special occasion to deserve something special.
+
+And you, Sara, are one of those people. ♡
+
+Just a little something from Sojib. On an ordinary day, for someone who isn't ordinary to me.
+          </p>
+          <div class="signature">with a little care, Sojib ♡</div>
+        </article>
+      </section>
+
+      <!-- Gallery -->
+      <section id="memories" aria-labelledby="memHead" style="margin-top:22px">
+        <div class="section-head" id="memHead">
+          <div class="eyebrow">little moments & little details</div>
+          <h2 class="serif">A page full of you</h2>
+          <p style="color:var(--muted);max-width:620px;margin:6px auto 0">Tap any photo to replace it with your own. Click a caption to edit and it will be saved for future visits.</p>
+        </div>
+
+        <div class="gallery" id="gallery" aria-live="polite">
+          <!-- Polaroids (6 placeholders). Replace images by clicking Replace or the image itself. -->
+          <!-- Template repeated; JS will wire upload inputs -->
+          <article class="polaroid" data-index="0" aria-label="Photo 1">
+            <div class="sticker">✿</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 1">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f8efe9' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 01</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-01.jpg</text></svg>" alt="Photo 01 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 1">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 1">Photo 01 — a small moment</div>
+          </article>
+
+          <article class="polaroid" data-index="1" aria-label="Photo 2">
+            <div class="sticker">✧</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 2">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f6efe9' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 02</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-02.jpg</text></svg>" alt="Photo 02 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 2">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 2">Photo 02 — favorite day</div>
+          </article>
+
+          <article class="polaroid" data-index="2" aria-label="Photo 3">
+            <div class="sticker">♡</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 3">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f7efe7' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 03</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-03.jpg</text></svg>" alt="Photo 03 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 3">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 3">Photo 03 — small and sweet</div>
+          </article>
+
+          <article class="polaroid" data-index="3" aria-label="Photo 4">
+            <div class="sticker">☾</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 4">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f8efe7' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 04</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-04.jpg</text></svg>" alt="Photo 04 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 4">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 4">Photo 04 — gentle evening</div>
+          </article>
+
+          <article class="polaroid" data-index="4" aria-label="Photo 5">
+            <div class="sticker">✿</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 5">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f7efe7' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 05</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-05.jpg</text></svg>" alt="Photo 05 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 5">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 5">Photo 05 — quiet laugh</div>
+          </article>
+
+          <article class="polaroid" data-index="5" aria-label="Photo 6">
+            <div class="sticker">✧</div>
+            <div class="photo" tabindex="0" role="img" aria-label="Photo placeholder 6">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><rect fill='%23f8efe7' width='100%' height='100%'/><text x='50%' y='48%' font-size='36' fill='%239c746d' font-family='Caveat,serif' text-anchor='middle'>Photo 06</text><text x='50%' y='60%' font-size='16' fill='%239c746d' font-family='DM Sans, sans-serif' text-anchor='middle'>Replace with images/sara-06.jpg</text></svg>" alt="Photo 06 placeholder">
+            </div>
+            <button class="replace-btn" aria-label="Replace photo 6">Replace photo</button>
+            <input type="file" accept="image/*" class="replace-input" aria-hidden="true">
+            <div class="caption" contenteditable="true" aria-label="Caption 6">Photo 06 — small discovery</div>
+          </article>
+        </div>
+
+        <p class="gallery-tip">Tip: captions are editable — click, type, and they're saved automatically.</p>
+      </section>
+
+      <!-- Flipbook -->
+      <section class="flip-section" aria-labelledby="flipHead">
+        <div class="book-wrap">
+          <div class="section-head" id="flipHead">
+            <div class="eyebrow">turn a page, take your time</div>
+            <h2 class="serif">Little notes for Sara</h2>
+            <p style="color:var(--muted);max-width:700px;margin:8px auto 0">A tiny flipbook. Use the controls or swipe left/right on mobile.</p>
+          </div>
+
+          <div class="book" id="book" aria-live="polite">
+            <div class="page left" id="leftPage" aria-hidden="false">
+              <div class="page-no" id="leftNo">A little keepsake · 01</div>
+              <h3 id="leftTitle">A little note for an ordinary day</h3>
+              <p id="leftBody">Some days don't need a reason to be meaningful. I hope this quiet page is a reminder that being yourself is already enough to make the day softer.</p>
+            </div>
+
+            <div class="page right" id="rightPage" aria-hidden="false">
+              <div class="page-no" id="rightNo">A little keepsake · 02</div>
+              <h3 id="rightTitle">Little things that make you uniquely you</h3>
+              <p id="rightBody">The small habits and gentle ways you move through the world — a thoughtful smile, your careful taste, the way you notice small details — they leave an impression. Those are the things that feel quietly special.</p>
+            </div>
+          </div>
+
+          <div class="book-controls" style="margin-top:18px">
+            <button id="prevPage" class="btn" aria-label="Previous pages" disabled>← Previous</button>
+            <div class="counter" id="pageCounter">1–2 of 5</div>
+            <button id="nextPage" class="btn primary" aria-label="Next pages">Next →</button>
+          </div>
+          <p class="gallery-tip" style="margin-top:12px">Swipe left/right on phones to turn pages.</p>
+        </div>
+      </section>
+
+      <!-- Personal letter repeated more fully -->
+      <section id="letter" style="margin-top:24px" aria-labelledby="letterHead">
+        <div class="section-head" id="letterHead">
+          <div class="eyebrow">one last thing</div>
+          <h2 class="serif">A personal letter</h2>
+          <p style="color:var(--muted)">Written simply, and meant gently.</p>
+        </div>
+
+        <article class="personal-letter" aria-labelledby="letterTitle">
+          <h3 id="letterTitle" class="eyebrow">A letter</h3>
+          <p class="letter-copy">
+Hey Sara,
+
+Today isn't your birthday. It isn't an anniversary or any special occasion either.
+
+It's just an ordinary day.
+
+But then I thought... why should I wait for a special day to make someone feel special?
+
+So here's a little something for you. No occasion. No expectations. Just a small reminder that you can make an ordinary day feel a little more beautiful simply by being yourself.
+
+You don't have to do anything with this. Just explore it at your own pace and take whatever happiness you find here.
+
+Some people don't need a special occasion to deserve something special.
+
+And you, Sara, are one of those people. ♡
+
+Just a little something from Sojib. On an ordinary day, for someone who isn't ordinary to me.
+          </p>
+        </article>
+      </section>
+
+      <!-- Final surprise -->
+      <section id="final" style="margin-top:28px" aria-labelledby="finalHead">
+        <div class="section-head" id="finalHead">
+          <div class="eyebrow">before you go</div>
+          <h2 class="serif">Keep this little feeling</h2>
+        </div>
+
+        <div class="final-scene" role="region" aria-label="Final surprise">
+          <div class="hand">just a small reminder ♡</div>
+          <p class="final-text">No special day. No big occasion. Just a little reminder that someone appreciates you for being you. ♡</p>
+          <button id="readAgain" class="btn primary" aria-label="Read it again">Read it again</button>
+        </div>
+      </section>
+
+      <footer style="text-align:center;color:var(--muted);margin:22px 0 80px">Made with care by Sojib · for an ordinary day that deserves a little softness ♡</footer>
+    </main>
+  </div>
+
+  <!-- hidden audio (not autoplay). To add music, place a music file at assets/music.mp3 and uncomment / update the <source>. -->
+  <audio id="bgMusic" preload="none" loop>
+    <!-- Example: <source src="assets/music.mp3" type="audio/mpeg"> -->
+    <!-- No audio provided by default to respect device bandwidth and user's preference. -->
+  </audio>
+
+  <!-- floating hearts copies for soft effect -->
+  <div class="float-heart" style="left:12%; animation-duration:10s">♡</div>
+  <div class="float-heart" style="left:30%; animation-duration:14s; font-size:18px">♡</div>
+  <div class="float-heart" style="left:78%; animation-duration:12s; font-size:22px">♡</div>
+
+  <script>
+    // Main interactive script
+    (function () {
+      // DOM references
+      const opening = document.getElementById('opening');
+      const envelope = document.getElementById('envelope');
+      const openBtn = document.getElementById('openBtn');
+      const site = document.getElementById('site');
+      const musicToggle = document.getElementById('musicToggle');
+      const bgMusic = document.getElementById('bgMusic');
+      const restartBtn = document.getElementById('restart');
+      const readAgainBtn = document.getElementById('readAgain');
+
+      // Gallery handling
+      const gallery = document.getElementById('gallery');
+      const polaroids = Array.from(gallery.querySelectorAll('.polaroid'));
+
+      // Local storage keys
+      const PSTORAGE = 'scrapbook_photos_v1';
+      const CSTORAGE = 'scrapbook_captions_v1';
+      const PAGEKEY = 'scrapbook_page_v1';
+
+      // Load saved photos and captions
+      let savedPhotos = JSON.parse(localStorage.getItem(PSTORAGE) || '{}');
+      let savedCaptions = JSON.parse(localStorage.getItem(CSTORAGE) || '{}');
+
+      polaroids.forEach(card => {
+        const idx = card.dataset.index;
+        const img = card.querySelector('img');
+        const input = card.querySelector('.replace-input');
+        const btn = card.querySelector('.replace-btn');
+        const caption = card.querySelector('.caption');
+
+        // restore saved photo
+        if (savedPhotos[idx]) {
+          img.src = savedPhotos[idx];
+        }
+
+        // restore caption
+        if (savedCaptions[idx]) caption.textContent = savedCaptions[idx];
+
+        // clicking the photo opens the file picker
+        card.querySelector('.photo').addEventListener('click', () => input.click());
+
+        // button triggers file input
+        btn.addEventListener('click', () => input.click());
+
+        // handle file chosen
+        input.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function (ev) {
+            img.src = ev.target.result;
+            savedPhotos[idx] = ev.target.result;
+            localStorage.setItem(PSTORAGE, JSON.stringify(savedPhotos));
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // caption persistence on blur or Enter
+        caption.addEventListener('blur', () => {
+          savedCaptions[idx] = caption.textContent.trim();
+          localStorage.setItem(CSTORAGE, JSON.stringify(savedCaptions));
+        });
+        caption.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            caption.blur();
+          }
+        });
+      });
+
+      // Opening animation
+      function openScrapbook() {
+        envelope.classList.add('open');
+        envelope.setAttribute('aria-pressed','true');
+        openBtn.disabled = true;
+        openBtn.setAttribute('aria-disabled','true');
+        // delay reveal slightly to allow flap to open
+        setTimeout(() => {
+          opening.style.display = 'none';
+          site.classList.add('visible');
+          // wait a tick then fade in
+          setTimeout(() => site.classList.add('ready'), 40);
+          site.setAttribute('aria-hidden','false');
+        }, 650);
+      }
+
+      openBtn.addEventListener('click', openScrapbook);
+      envelope.addEventListener('click', openScrapbook);
+      envelope.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openScrapbook(); });
+
+      // Music toggle (no autoplay)
+      musicToggle.addEventListener('click', () => {
+        const isPlaying = !bgMusic.paused;
+        if (isPlaying) {
+          bgMusic.pause();
+          musicToggle.textContent = '♫ Music: off';
+          musicToggle.setAttribute('aria-pressed','false');
+        } else {
+          // If no source, inform user how to add music
+          if (!bgMusic.querySelector('source')) {
+            // gentle fallback message
+            alert('No background music file was provided. To add music, place a file at assets/music.mp3 and add a <source> tag inside the audio element or edit the source path in the HTML.');
+            return;
+          }
+          bgMusic.play().catch((err) => {
+            console.warn('Playback prevented:', err);
+          });
+          musicToggle.textContent = '♫ Music: on';
+          musicToggle.setAttribute('aria-pressed','true');
+        }
+      });
+
+      // Restart: show opening again
+      restartBtn.addEventListener('click', () => {
+        // reset to opening state
+        site.classList.remove('ready');
+        setTimeout(() => {
+          site.classList.remove('visible');
+          opening.style.display = 'grid';
+          envelope.classList.remove('open');
+          openBtn.disabled = false;
+          openBtn.removeAttribute('aria-disabled');
+        }, 300);
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+
+      // Read it again button: scroll to flipbook and open if needed
+      readAgainBtn.addEventListener('click', () => {
+        if (opening.style.display !== 'none') openScrapbook();
+        // scroll to top of scrapbook content
+        document.querySelector('main').scrollIntoView({behavior:'smooth'});
+        // also reset flipbook to first pages
+        setTimeout(()=>{ setPageIndex(0); }, 200);
+      });
+
+      // Flipbook logic
+      const pages = [
+        {
+          title: "A little note for an ordinary day",
+          theme: "A little keepsake · 01",
+          body: "Some days don't need a reason to be meaningful. I hope this quiet page is a reminder that being yourself is already enough to make the day softer."
+        },
+        {
+          title: "Little things that make you uniquely you",
+          theme: "A little keepsake · 02",
+          body: "The small habits and thoughtful ways you move through the world — a careful smile, a soft curiosity, the way you notice details — they make ordinary moments feel nicer."
+        },
+        {
+          title: "Things I appreciate about you",
+          theme: "A little keepsake · 03",
+          body: "I appreciate your calmness, your taste, the gentle honesty in your voice, and the little attentions you show. These are quiet things, but they matter more than you might think."
+        },
+        {
+          title: "A reminder that you deserve kindness",
+          theme: "A little keepsake · 04",
+          body: "You deserve patience, rest, and small kindnesses without needing to earn them. If a day feels heavy, consider this page permission to be gentle with yourself."
+        },
+        {
+          title: "A final message from Sojib",
+          theme: "A little keepsake · 05",
+          body: "Thank you for being who you are. No big declarations — just an honest appreciation for the person you bring into a room. I hope this little collection made today a bit softer."
+        }
+      ];
+
+      // DOM refs for book
+      const leftNo = document.getElementById('leftNo');
+      const leftTitle = document.getElementById('leftTitle');
+      const leftBody = document.getElementById('leftBody');
+      const rightNo = document.getElementById('rightNo');
+      const rightTitle = document.getElementById('rightTitle');
+      const rightBody = document.getElementById('rightBody');
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+      const pageCounter = document.getElementById('pageCounter');
+      const bookEl = document.getElementById('book');
+
+      let pageIndex = Number(localStorage.getItem(PAGEKEY) || 0); // index points to left page in pairs: 0,2,4...
+      // ensure valid
+      function clampPage(i){
+        if (i < 0) return 0;
+        if (i > Math.max(0, pages.length - (isSinglePage() ? 1 : 2))) return Math.max(0, pages.length - (isSinglePage() ? 1 : 2));
+        return i;
+      }
+
+      function isSinglePage(){
+        return window.innerWidth <= 680;
+      }
+
+      function renderPages(idx){
+        idx = clampPage(idx);
+        // Save
+        localStorage.setItem(PAGEKEY, idx);
+        // left page always idx
+        const left = pages[idx] || {title:'',body:'',theme:''};
+        leftNo.textContent = left.theme || '';
+        leftTitle.textContent = left.title || '';
+        leftBody.textContent = left.body || '';
+
+        if (isSinglePage()){
+          // hide right page visually
+          document.getElementById('rightPage').style.display = 'none';
+        } else {
+          document.getElementById('rightPage').style.display = 'block';
+          const right = pages[idx+1] || {title:'',body:'',theme:''};
+          rightNo.textContent = right.theme || '';
+          rightTitle.textContent = right.title || '';
+          rightBody.textContent = right.body || '';
+        }
+
+        // update controls
+        prevBtn.disabled = idx <= 0;
+        nextBtn.disabled = (idx >= pages.length - (isSinglePage()?1:2));
+        pageCounter.textContent = isSinglePage()
+          ? (idx+1) + ' of ' + pages.length
+          : (idx+1) + '–' + Math.min(idx+2, pages.length) + ' of ' + pages.length;
+      }
+
+      // page turn animations: simple flip
+      function animateTurn(direction){
+        // add class then reset
+        bookEl.classList.remove('turn-left','turn-right');
+        void bookEl.offsetWidth;
+        bookEl.classList.add(direction === 'next' ? 'turn-right' : 'turn-left');
+        // remove after animation
+        setTimeout(()=>bookEl.classList.remove('turn-left','turn-right'), 520);
+      }
+
+      function setPageIndex(newIdx){
+        newIdx = clampPage(newIdx);
+        if (newIdx === pageIndex) return;
+        animateTurn(newIdx > pageIndex ? 'next' : 'prev');
+        pageIndex = newIdx;
+        renderPages(pageIndex);
+      }
+
+      prevBtn.addEventListener('click', ()=> setPageIndex(pageIndex - (isSinglePage()?1:2)));
+      nextBtn.addEventListener('click', ()=> setPageIndex(pageIndex + (isSinglePage()?1:2)));
+
+      // initial render
+      function initBook(){
+        // if pageIndex is odd for two-page mode, align to even. (We always start left on even index)
+        if (!isSinglePage() && pageIndex % 2 === 1) pageIndex = Math.max(0,pageIndex-1);
+        pageIndex = clampPage(pageIndex);
+        renderPages(pageIndex);
+      }
+      initBook();
+
+      // responsive: re-render when resizing to change single/double mode
+      let resizeTimeout;
+      window.addEventListener('resize', ()=> {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(()=> {
+          // if size changed to single/double, adjust page index to valid range
+          if (!isSinglePage() && pageIndex % 2 === 1) pageIndex = Math.max(0,pageIndex-1);
+          renderPages(pageIndex);
+        },120);
+      });
+
+      // Swipe support for book on touch devices
+      let touchStartX = 0;
+      let touchStartY = 0;
+      const threshold = 40;
+
+      bookEl.addEventListener('touchstart', (e)=>{
+        const t = e.changedTouches[0];
+        touchStartX = t.clientX; touchStartY = t.clientY;
+      }, {passive:true});
+      bookEl.addEventListener('touchend', (e)=>{
+        const t = e.changedTouches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold){
+          if (dx < 0){
+            // swipe left -> next
+            setPageIndex(pageIndex + (isSinglePage()?1:2));
+          } else {
+            setPageIndex(pageIndex - (isSinglePage()?1:2));
+          }
+        }
+      }, {passive:true});
+
+      // Keyboard navigation for flipbook
+      document.addEventListener('keydown', (e)=>{
+        if (e.key === 'ArrowRight') setPageIndex(pageIndex + (isSinglePage()?1:2));
+        if (e.key === 'ArrowLeft') setPageIndex(pageIndex - (isSinglePage()?1:2));
+      });
+
+      // restore open if previously opened? No — start closed by default.
+      // Ensure focus outlines are visible for accessibility
+      document.addEventListener('keydown', (e)=> {
+        if (e.key === 'Tab') document.body.classList.add('show-focus');
+      });
+
+      // simple subtle animation classes for book turning (CSS-in-JS)
+      const style = document.createElement('style');
+      style.textContent = `
+        .turn-right .left { transform: rotateY(-8deg); opacity:.9; }
+        .turn-right .right { transform: rotateY(6deg); opacity:.95; }
+        .turn-left .left { transform: rotateY(6deg); opacity:.95; }
+        .turn-left .right { transform: rotateY(-6deg); opacity:.9; }
+        .left, .right { transition: transform .48s ease, opacity .48s ease; transform-origin:center left; }
+      `;
+      document.head.appendChild(style);
+
+      // Helpful console note: quick instructions
+      console.log('Scrapbook ready. Save images in localStorage by replacing them in the gallery. To add background music, add an audio source to the <audio id="bgMusic"> element in the HTML.');
+
+    })();
+  </script>
+</body>
+</html>
